@@ -1,12 +1,65 @@
-<script setup lang="ts">
-// This starter template is using Vue 3 <script setup> SFCs
-// Check out https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup
-import HelloWorld from './components/HelloWorld.vue'
+<script lang="ts">
+import { ref } from "@vue/reactivity";
+import { onMounted } from "@vue/runtime-core";
+import { io } from "socket.io-client";
+import { format, parseISO } from "date-fns";
+export default {
+  data() {
+    return {
+      messages: [],
+    };
+  },
+  methods: {
+    format(date: string) {
+      return format(parseISO(date), "yyyy-mm-dd hh:mm");
+    },
+  },
+  mounted() {
+    try {
+      const socket = io("https://sms-community-board.herokuapp.com/", {
+        reconnection: true,
+      });
+      socket.on("connect", () => {
+        console.log(socket.id); // x8WIv7-mJelg7on_ALbx
+      });
+      socket.on("initial_messages", (data) => {
+        this.messages = data;
+        console.log("initial_messages", data);
+      });
+
+      socket.on("message", (data) => {
+        this.messages = [...data, ...this.messages];
+        console.log("message", data);
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  },
+};
 </script>
 
 <template>
-  <img alt="Vue logo" src="./assets/logo.png" />
-  <HelloWorld msg="Hello Vue 3 + TypeScript + Vite" />
+  <h1>Silly Message Board</h1>
+  <div class="container">
+    <section class="nes-container is-dark">
+      <section class="message-list">
+        <section class="message -right">
+          <!-- Balloon -->
+          <div class="nes-balloon from-right is-dark">
+            <p>Text +1 407 358 0380 to get your message on this board</p>
+          </div>
+          <i class="nes-bcrikko"></i>
+        </section>
+      </section>
+    </section>
+
+    <template v-for="message of messages" :key="message.id">
+      <div class="nes-container with-title is-rounded">
+        <p class="title">{{ format(message.created_at) }}</p>
+        <p>{{ message.message }}</p>
+      </div>
+    </template>
+  </div>
 </template>
 
 <style>
@@ -17,5 +70,12 @@ import HelloWorld from './components/HelloWorld.vue'
   text-align: center;
   color: #2c3e50;
   margin-top: 60px;
+}
+
+.container {
+  width: 25%;
+  margin: auto;
+  display: grid;
+  row-gap: 1rem;
 }
 </style>
