@@ -51,7 +51,10 @@ onMounted(() => {
         <section class="message -right">
           <!-- Balloon -->
           <div class="nes-balloon from-right is-dark">
-            <p>Text +1 407 358 0380 to get your message on this board</p>
+            <p>
+              Text <a href="tel:4073580380 ">+1 407 358 0380 </a> to get your
+              message on this board
+            </p>
           </div>
           <i class="nes-bcrikko"></i>
         </section>
