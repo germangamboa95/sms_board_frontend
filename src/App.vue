@@ -84,7 +84,7 @@ onMounted(() => {
   row-gap: 1rem;
 }
 
-@media screen and (max-width: 400px) {
+@media screen and (max-width: 500px) {
   .container {
     width: 90%;
     margin: auto;
