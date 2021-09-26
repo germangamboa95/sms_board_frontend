@@ -1,41 +1,46 @@
-<script lang="ts">
+<script setup lang="ts">
 import { ref } from "@vue/reactivity";
 import { onMounted } from "@vue/runtime-core";
 import { io } from "socket.io-client";
 import { format, parseISO } from "date-fns";
-export default {
-  data() {
-    return {
-      messages: [],
-    };
-  },
-  methods: {
-    format(date: string) {
-      return format(parseISO(date), "yyyy-mm-dd hh:mm");
-    },
-  },
-  mounted() {
-    try {
-      const socket = io("https://sms-community-board.herokuapp.com/", {
-        reconnection: true,
-      });
-      socket.on("connect", () => {
-        console.log(socket.id); // x8WIv7-mJelg7on_ALbx
-      });
-      socket.on("initial_messages", (data) => {
-        this.messages = data;
-        console.log("initial_messages", data);
-      });
 
-      socket.on("message", (data) => {
-        this.messages = [...data, ...this.messages];
-        console.log("message", data);
-      });
-    } catch (error) {
-      console.log(error);
-    }
-  },
+interface Message {
+  id: number;
+  message: string;
+  source: string;
+  created_at: string;
+  updated_at: string;
+  deleted_at?: string;
+  reported_at?: string;
+}
+
+const messages = ref<Message[]>([]);
+
+const formatDate = (date: string) => {
+  return format(parseISO(date), "yyyy-mm-dd hh:mm");
 };
+
+onMounted(() => {
+  try {
+    const socket = io("https://sms-community-board.herokuapp.com/", {
+      reconnection: true,
+    });
+    socket.on("connect", () => {
+      console.log(socket.id); // x8WIv7-mJelg7on_ALbx
+    });
+    socket.on("initial_messages", (data) => {
+      messages.value = data;
+      console.log("initial_messages", data);
+    });
+
+    socket.on("message", (data) => {
+      messages.value = [...data, ...messages.value];
+      console.log("message", data);
+    });
+  } catch (error) {
+    console.log(error);
+  }
+});
 </script>
 
 <template>
@@ -55,7 +60,7 @@ export default {
 
     <template v-for="message of messages" :key="message.id">
       <div class="nes-container with-title is-rounded">
-        <p class="title">{{ format(message.created_at) }}</p>
+        <p class="title">{{ formatDate(message.created_at) }}</p>
         <p>{{ message.message }}</p>
       </div>
     </template>
