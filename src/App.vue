@@ -83,4 +83,13 @@ onMounted(() => {
   display: grid;
   row-gap: 1rem;
 }
+
+@media screen and (max-width: 400px) {
+  .container {
+    width: 90%;
+    margin: auto;
+    display: grid;
+    row-gap: 1rem;
+  }
+}
 </style>
