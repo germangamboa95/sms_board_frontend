@@ -61,12 +61,14 @@ onMounted(() => {
       </section>
     </section>
 
-    <template v-for="message of messages" :key="message.id">
-      <div class="nes-container with-title is-rounded">
-        <p class="title">{{ formatDate(message.created_at) }}</p>
-        <p>{{ message.message }}</p>
-      </div>
-    </template>
+    <div class="scroll-area">
+      <template v-for="message of messages" :key="message.id">
+        <div class="nes-container with-title is-rounded">
+          <p class="title">{{ formatDate(message.created_at) }}</p>
+          <p>{{ message.message }}</p>
+        </div>
+      </template>
+    </div>
   </div>
 </template>
 
@@ -85,6 +87,13 @@ onMounted(() => {
   margin: auto;
   display: grid;
   row-gap: 1rem;
+}
+
+.scroll-area {
+  display: grid;
+  row-gap: 1rem;
+  height: 100vh;
+  overflow-y: scroll;
 }
 
 @media screen and (max-width: 500px) {
