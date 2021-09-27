@@ -17,7 +17,7 @@ interface Message {
 const messages = ref<Message[]>([]);
 
 const formatDate = (date: string) => {
-  return format(parseISO(date), "yyyy-mm-dd hh:mm");
+  return format(parseISO(date), "yyyy-MM-dd hh:mm");
 };
 
 onMounted(() => {
