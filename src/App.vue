@@ -3,44 +3,26 @@ import { ref } from "@vue/reactivity";
 import { onMounted } from "@vue/runtime-core";
 import { io } from "socket.io-client";
 import { format, parseISO } from "date-fns";
+import Message from "./components/Message.vue";
+import { useMessages } from "./sockets";
 
-interface Message {
-  id: number;
-  message: string;
-  source: string;
-  created_at: string;
-  updated_at: string;
-  deleted_at?: string;
-  reported_at?: string;
+const { messages, handleReportedMessage, handleNewMessage } = useMessages();
+const content = ref("");
+
+enum COMPNENT_STATE {
+  READY = "ready",
+  BUSY = "busy",
 }
 
-const messages = ref<Message[]>([]);
+const status = ref<COMPNENT_STATE>(COMPNENT_STATE.READY);
 
-const formatDate = (date: string) => {
-  return format(parseISO(date), "yyyy-MM-dd hh:mm");
+const createMessage = async () => {
+  if (!content.value || status.value == COMPNENT_STATE.BUSY) return;
+  status.value = COMPNENT_STATE.BUSY;
+  await handleNewMessage(content.value);
+  content.value = "";
+  status.value = COMPNENT_STATE.READY;
 };
-
-onMounted(() => {
-  try {
-    const socket = io("https://sms-community-board.herokuapp.com/", {
-      reconnection: true,
-    });
-    socket.on("connect", () => {
-      console.log(socket.id); // x8WIv7-mJelg7on_ALbx
-    });
-    socket.on("initial_messages", (data) => {
-      messages.value = data;
-      console.log("initial_messages", data);
-    });
-
-    socket.on("message", (data) => {
-      messages.value = [...data, ...messages.value];
-      console.log("message", data);
-    });
-  } catch (error) {
-    console.log(error);
-  }
-});
 </script>
 
 <template>
@@ -48,25 +30,19 @@ onMounted(() => {
   <div class="container">
     <section class="nes-container is-dark">
       <section class="message-list">
-        <section class="message -right">
-          <!-- Balloon -->
-          <div class="nes-balloon from-right is-dark">
-            <p>
-              Text <a href="sms:4073580380 ">+1 407 358 0380 </a> to get your
-              message on this board
-            </p>
+        <form action="" @submit.prevent="createMessage">
+          <label for="textarea_field">Say Something to the world</label>
+          <textarea v-model="content" class="nes-textarea is-dark"></textarea>
+          <div class="action_container">
+            <button type="submit" class="nes-btn is-primary">Get Silly</button>
           </div>
-          <i class="nes-bcrikko"></i>
-        </section>
+        </form>
       </section>
     </section>
 
     <div class="scroll-area">
       <template v-for="message of messages" :key="message.id">
-        <div class="nes-container with-title is-rounded">
-          <p class="title">{{ formatDate(message.created_at) }}</p>
-          <p>{{ message.message }}</p>
-        </div>
+        <Message @report-message="handleReportedMessage" :message="message" />
       </template>
     </div>
   </div>
@@ -88,12 +64,24 @@ onMounted(() => {
   display: grid;
   row-gap: 1rem;
 }
-
+.nes-container {
+  padding: 1rem !important;
+}
 .scroll-area {
   display: grid;
   row-gap: 1rem;
   height: 100vh;
   overflow-y: scroll;
+}
+
+.message-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.action_container {
+  display: flex;
+  justify-content: flex-end;
 }
 
 @media screen and (max-width: 500px) {
